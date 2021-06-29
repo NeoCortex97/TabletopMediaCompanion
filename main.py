@@ -4,6 +4,9 @@ from typing import List, Dict
 
 import rtmidi2
 
+from MidiCs.Field import RealTimeField, ChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, \
+    SoftwareVersionField
+from MidiCs.SysexMessage import SysexMessage
 
 DEVICE_INQUIRY_REQUEST = [240, 126, 127, 6, 1, 247]
 DEVICE_INQUIRY_RESPONSE = [240, 126, 'id', 6, 2, 'manufacturer', 'manufacturer*', 'manufacturer*', 'family', 'family', 'product', 'product', 'fw', 'fw', 'fw', 'fw', 247]
@@ -69,6 +72,7 @@ def decode_query_response(response, template) -> Dict[str, List[int] or int or s
 
 
 def main():
+    template = [RealTimeField, ChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, SoftwareVersionField]
     ports = enum_ports()
     # print(ports)
     for port in ports['both']:
@@ -78,7 +82,10 @@ def main():
         out_port = rtmidi2.MidiOut()
         out_port.open_port(port['out_port'])
         response = run_query(in_port, out_port, DEVICE_INQUIRY_REQUEST)
-        print(decode_query_response(response, DEVICE_INQUIRY_RESPONSE))
+        try:
+            print(SysexMessage(template, response).contents)
+        except IndexError:
+            print("Unable to parse response.")
         out_port.close_port()
         in_port.close_port()
 
