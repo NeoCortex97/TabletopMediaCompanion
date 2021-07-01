@@ -4,7 +4,7 @@ from typing import List, Dict
 
 import rtmidi2
 
-from MidiCs.Field import RealTimeField, ChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, \
+from MidiCs.Field import RealTimeField, SysexChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, \
     SoftwareVersionField
 from MidiCs.SysexMessage import SysexMessage
 
@@ -72,7 +72,7 @@ def decode_query_response(response, template) -> Dict[str, List[int] or int or s
 
 
 def main():
-    template = [RealTimeField, ChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, SoftwareVersionField]
+    template = [RealTimeField, SysexChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, SoftwareVersionField]
     ports = enum_ports()
     # print(ports)
     for port in ports['both']:
@@ -88,6 +88,10 @@ def main():
             print("Unable to parse response.")
         out_port.close_port()
         in_port.close_port()
+
+    request_template = [RealTimeField, SysexChannelField, SysexIdField]
+    identity_request = SysexMessage(request_template)
+    print(identity_request.encode([False, '*', 'IDENTITY_REQ']))
 
 
 if __name__ == "__main__":

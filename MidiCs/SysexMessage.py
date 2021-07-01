@@ -28,3 +28,12 @@ class SysexMessage:
             raise ValueError("Malformed sysex command. Message has to start with 240 but starts with {}".format(data[0]))
         else:
             raise ValueError("Malformed sysex command. Message has to end with 247 but ends with {}".format(data[-1]))
+
+    def encode(self, content: List[Any]) -> List[int]:
+        result = [self.prefix]
+        for field, value in zip(self.template, content):
+            tmp = field()
+            tmp.content = value
+            result.extend(tmp.encode())
+        result.append(self.postfix)
+        return result

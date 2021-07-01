@@ -1,6 +1,7 @@
-from typing import List, Dict, Any
-import MidiCs.ManufacturerName
-from MidiCs.SysexConstants import SYSEX_NAMES
+from typing import List, Dict, Any, Tuple
+from MidiCs.ManufacturerName import MANUFACTURER_NAME
+from MidiCs.ManufacturerId import MANUFACTURER_ID
+from MidiCs.SysexConstants import SYSEX_NAMES, SYSEX_IDS
 
 
 class Field:
@@ -18,6 +19,9 @@ class Field:
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         result[self.name] = self.content
         return result
+
+    def encode(self) -> List[int]:
+        return [self.content]
 
 
 class TwoByteField(Field):
@@ -51,10 +55,16 @@ class RealTimeField(Field):
             raise ValueError("Invalid realtime command input! {} is not a valid value!".format(self.content))
         return result
 
+    def encode(self) -> List[int]:
+        if type(self.content) == bool:
+            return [126 + int(self.content)]
+        elif type(self.content) == int:
+            return [self.content]
 
-class ChannelField(Field):
+
+class SysexChannelField(Field):
     def __init__(self, name: str = None):
-        super(ChannelField, self).__init__(name=name)
+        super(SysexChannelField, self).__init__(name=name)
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         if self.content == 127:
@@ -62,6 +72,12 @@ class ChannelField(Field):
         else:
             result[self.name] = self.content
         return result
+
+    def encode(self) -> List[int]:
+        if type(self.content) == str:
+            return [127]
+        elif type(self.content) == int:
+            return [self.content]
 
 
 class SysexIdField(TwoByteField):
@@ -76,6 +92,11 @@ class SysexIdField(TwoByteField):
             result[self.name] = 'UNKNOWN'
         return result
 
+    def encode(self) -> List[int]:
+        if type(self.content) == str:
+            return SYSEX_IDS[self.content]
+        elif type(self.content) == List[int]:
+            return self.content
 
 
 class ManufacturerField(Field):
@@ -91,8 +112,14 @@ class ManufacturerField(Field):
             return message[1:]
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
-        result[self.name] = MidiCs.ManufacturerName.MANUFACTURER_NAME[tuple(self.content)]
+        result[self.name] = MANUFACTURER_NAME[tuple(self.content)]
         return result
+
+    def encode(self) -> List[int]:
+        if type(self.content) == str:
+            return list(MANUFACTURER_ID[self.content])
+        elif type(self.content) == Tuple[int]:
+            return list(self.content)
 
 
 class FamilyIdField(TwoByteField):
@@ -120,7 +147,7 @@ if __name__ == "__main__":
     data = [240, 126, 0, 6, 2, 0, 32, 41, 105, 0, 0, 0, 0, 1, 6, 2, 247]
     print(data)
     data = data[1:-1]
-    template = [RealTimeField, ChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, SoftwareVersionField]
+    template = [RealTimeField, SysexChannelField, SysexIdField, ManufacturerField, FamilyIdField, ProductIdField, SoftwareVersionField]
     result = []
     for field in template:
         tmp = field()

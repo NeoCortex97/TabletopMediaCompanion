@@ -10,4 +10,4 @@ SYSEX_NAMES = {
     (6, 2): "IDENTITY_RES"
 }
 
-SYSEX_IDS = {item[1]: item[0] for item in SYSEX_NAMES}
+SYSEX_IDS = {item[1]: item[0] for item in SYSEX_NAMES.items()}
