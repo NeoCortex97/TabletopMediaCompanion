@@ -14,3 +14,5 @@ All numbers in this table are in decimal for simpler use in code
 | Launchpad mk3 (bootloader)      | `19` `17`  | `00` `00`  |
 | Launchpad S                     | `32` `00`  | `00` `00`  |
 | Launchpad X                     |         ?  |         ?  |
+
+For now, I do not feel comfortable pushing the PDF manuals as well.
