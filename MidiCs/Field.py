@@ -5,12 +5,11 @@ from MidiCs.SysexConstants import SYSEX_NAMES, SYSEX_IDS
 
 
 class Field:
-    def __init__(self, name: str = None):
+    def __init__(self, **kwargs):
         self.content = 0
-        if name is None:
-            self.name = self.__class__.__name__[:-5]
-        else:
-            self.name = name
+        self.name = self.__class__.__name__[:-5]
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def parse(self, message: List[int]) -> List[int]:
         self.content = message[0]
@@ -25,8 +24,8 @@ class Field:
 
 
 class TwoByteField(Field):
-    def __init__(self, name: str = None):
-        super(TwoByteField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(TwoByteField, self).__init__(**kwargs)
 
     def parse(self, message: List[int]) -> List[int]:
         self.content = message[:2]
@@ -34,8 +33,8 @@ class TwoByteField(Field):
 
 
 class FourByteField(Field):
-    def __init__(self, name: str = None):
-        super(FourByteField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(FourByteField, self).__init__(**kwargs)
 
     def parse(self, message: List[int]) -> List[int]:
         self.content = message[:4]
@@ -43,8 +42,8 @@ class FourByteField(Field):
 
 
 class RealTimeField(Field):
-    def __init__(self, name: str = None):
-        super(RealTimeField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(RealTimeField, self).__init__(**kwargs)
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         if self.content == 127:
@@ -63,8 +62,8 @@ class RealTimeField(Field):
 
 
 class SysexChannelField(Field):
-    def __init__(self, name: str = None):
-        super(SysexChannelField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(SysexChannelField, self).__init__(**kwargs)
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         if self.content == 127:
@@ -81,9 +80,9 @@ class SysexChannelField(Field):
 
 
 class SysexIdField(TwoByteField):
-    def __init__(self, name: str = None, options=SYSEX_NAMES):
-        super(SysexIdField, self).__init__(name=name)
-        self.command_names = options
+    def __init__(self, **kwargs):
+        super(SysexIdField, self).__init__(**kwargs)
+        self.command_names = kwargs.get("options", SYSEX_NAMES)
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         if tuple(self.content) in self.command_names:
@@ -100,8 +99,8 @@ class SysexIdField(TwoByteField):
 
 
 class ManufacturerField(Field):
-    def __init__(self, name: str = None):
-        super(ManufacturerField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(ManufacturerField, self).__init__(**kwargs)
 
     def parse(self, message: List[int]) -> List[int]:
         if message[0] == 0:
@@ -123,18 +122,18 @@ class ManufacturerField(Field):
 
 
 class FamilyIdField(TwoByteField):
-    def __init__(self, name: str = None):
-        super(FamilyIdField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(FamilyIdField, self).__init__(**kwargs)
 
 
 class ProductIdField(TwoByteField):
-    def __init__(self, name: str = None):
-        super(ProductIdField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(ProductIdField, self).__init__(**kwargs)
 
 
 class SoftwareVersionField(FourByteField):
-    def __init__(self, name: str = None):
-        super(SoftwareVersionField, self).__init__(name=name)
+    def __init__(self, **kwargs):
+        super(SoftwareVersionField, self).__init__(**kwargs)
 
     def dump(self, result: Dict[str, Any]) -> Dict[str, Any]:
         if 0 in self.content:
